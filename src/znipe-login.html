@@ -1,0 +1,67 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="znipe-login">
+  <template>
+    <style>
+      
+    </style>
+    <firebase-auth
+        id="auth"
+        user="{{user}}"
+        provider="google"
+        on-error="handleError">
+    </firebase-auth>
+
+
+    <paper-button on-tap="login" hidden$="[[user]]">Sign in</paper-button>
+    <paper-button on-tap="logout" hidden$="[[!user]]">Sign out</paper-button>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'znipe-login',
+      
+      properties: {
+        user: {
+            type: Object,
+            notify:true,
+            observer: ['userChanged']
+        }
+      },
+
+      handleError: function(error) {
+          console.log('got an error when logging in', error);
+      },
+
+      login: function() {
+        return this.$.auth.signInWithPopup();
+      },
+
+      logout: function() {
+        return this.$.auth.signOut();
+      },
+
+      userChanged: function(user) {
+        var loggedInUser = firebase.auth().currentUser;
+        if(loggedInUser !==  null) {
+          var userRef = firebase.database().ref('/pinball/' + loggedInUser.uid);
+          userRef.on('value', function(snapshot) {
+            var user = snapshot.val();
+            if(user.photo === undefined) {
+              userRef.update({
+                photo: loggedInUser.photoURL
+              });
+            }
+            
+          });
+          
+          
+        }
+      }
+
+    });
+  </script>
+</dom-module>

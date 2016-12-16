@@ -1,0 +1,142 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="znipe-personal-score">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+				padding: 16px 40px;
+      }
+
+      :host([hidden]:host, .hidden:host) {
+        display: none;
+      }
+
+      paper-card {
+				max-width: 720px;
+        width:100%;
+				margin: 16px auto;
+			}
+
+      .content { 
+        display:flex;
+        width:100%;
+			}
+
+      
+    </style>
+
+    <firebase-document
+        id="fbScore"
+        path="/pinball/{{user.uid}}"
+        data="{{player}}">
+    </firebase-document>
+
+    <div class="content">
+      <paper-card heading="Personal score">
+        <div class="card-content">
+
+          <paper-input
+            id="playerName"
+            label="Your cool and original name"
+            value="{{player.name}}"
+          >
+          </paper-input>
+          <paper-input
+            id="playerScore"
+            label="Your latest score (write full amount, ex: 43250020)"
+            value=[[player.score]]
+            on-input="formatScore"
+            type="number"
+            auto-validate
+            required
+            allowed-pattern="[0-9]"
+            error-message="numbers only!">
+          </paper-input>
+
+          <paper-input
+            id="playerQuote"
+            label="Inspiration for your lesser co-workers"
+            value="{{player.quote}}">
+          </paper-input>
+          <input id="imageUpload" type="file" style="display: none;" />
+          
+          <paper-button raised on-tap="openFileSelect">
+            <iron-icon icon="cloud-upload"></iron-icon>
+            &nbsp;Change profile image
+          </paper-button>
+        </div>
+      </paper-card>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'znipe-personal-score',
+
+      properties: {
+          user: String,
+      },
+
+      computeThis: function(value) {
+        if(value !== undefined) {
+          return parseInt(value);
+        }
+      },
+
+      formatScore: function(evt) {
+        var playerScore = parseInt(evt.target.value);
+        var scoreRef = firebase.database().ref('/pinball/' + this.user.uid);
+        scoreRef.update({
+          score: playerScore
+        });
+      },
+
+      attached: function() {
+        this.$.imageUpload
+          .addEventListener('change', this.handleFileSelect.bind(this), false);
+      },
+
+      handleFileSelect: function(evt) {
+        var selectedFile = evt.target.files[0];
+        
+        var userStorageRef = firebase.storage().ref('user/' + this.user.uid);
+        var userRef = firebase.database().ref('/pinball/' + this.user.uid);
+
+        userStorageRef.put(selectedFile)
+          .then(function(snapshot) {
+
+            userRef.update({
+              photo: snapshot.metadata.downloadURLs[0]
+            });
+        });
+      },
+
+      openFileSelect: function() {
+        this.$.imageUpload.click();
+      },
+
+      updatePlayer: function() {
+        if(this.user === undefined) return;
+        
+        var playerDetails = {
+          name: this.$.playerName.value,
+          score: 11,
+          quote: ''
+        };
+
+        console.log(playerDetails);
+        
+
+        var userRef = firebase.database().ref('/pinball/' + this.user.uid);
+        userRef.update(playerDetails);
+      }
+    });
+  </script>
+</dom-module>

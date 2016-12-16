@@ -1,0 +1,146 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="shared-styles.html">
+<dom-module id="znipe-scoreboard">
+	<template>
+
+		<style include="shared-styles">
+			:host {
+				display: block;
+				padding: 16px 40px;
+			}
+
+			paper-card {
+				max-width: 720px;
+				max-height: 200px;
+				margin: 16px auto;
+				--paper-card-header-image: {
+					max-height:200px;
+					max-width:200px;
+				};
+			}
+			
+			.headline {
+				font-size: 36px;
+			}
+
+			paper-card.rate { 
+				@apply(--layout-horizontal);
+			}
+
+			.player-image {
+				max-width: 100px;
+			}
+			.rate-content {
+				@apply(--layout-flex);
+				float: left;
+			}
+			.player-name { 
+				@apply(--paper-font-headline); 
+			}
+
+			.player-score { 
+				color: var(--paper-grey-600);
+				margin: 10px 0; 
+				font-size: 40px;
+			}
+
+			.player-quote {
+				color: var(--paper-grey-500);
+				font-style: italic;
+			}
+
+			@media (max-width: 600px) {
+				:host {
+					padding: 0;
+				}
+
+				.player-score { 
+					color: var(--paper-grey-600);
+					margin: 10px 0; 
+					font-size: 20px;
+				}
+				
+				paper-card {
+				margin: 8px;
+				--paper-card-header-image: {
+					max-height:180px;
+					max-width:180px;
+				};
+			}
+    	}
+		</style>
+		<div class="vafan">aa</div>
+		<template id="repeater" is="dom-repeat" items="{{players}}" as="player" sort="sortByScore">
+			<paper-card class="rate" image="{{player.photo}}">
+				<div class="rate-content">
+					<div class="card-content">
+						<div class="player-name">{{player.name}}</div>
+						<div class="player-score">[[formatNumber(player.score)]]</div>
+						<div class="player-quote">"{{player.quote}}"</div>
+					</div>
+				</div>
+			</paper-card>
+		</template>
+	</template>
+	<script>
+
+  Polymer({
+    is: 'znipe-scoreboard',
+
+	behaviors: [
+      Polymer.NeonSharedElementAnimatableBehavior
+    ],
+
+	properties: {
+		players: {
+			type: Array,
+		},
+
+		animationConfig: {
+			type: Object,
+			value: function() {
+				return {
+					'entry': [{
+						name: 'cascaded-animation',
+						animation: 'transform-animation',
+						transformFrom: 'translateY(200%)',
+						transformTo: 'none',
+						timing: {
+							delay: 250
+						}
+					}]
+				}
+			}
+		}
+
+	},
+
+	attached: function() {
+		console.log(this.$.repeater.querySelectorAll('paper-card'));
+      this.async(function() {
+        var nodeList = Polymer.dom(this.root).querySelectorAll('paper-card');
+        this.animationConfig['entry'][0].nodes = Array.prototype.slice.call(nodeList);
+      });
+    },
+
+	formatNumber: function(score) {
+		var playerScore = parseInt(score);
+		if(playerScore != NaN) {
+			playerScore = playerScore.toLocaleString();
+		}
+		
+		return playerScore;
+	},
+
+	sortByScore: function(a,b) {
+		if(a.score == b.score) return 0;
+		return a.score > b.score ? -1 : 1;
+	}
+  });
+
+  </script>
+
+</dom-module>

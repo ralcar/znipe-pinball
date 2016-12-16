@@ -1,0 +1,37 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<dom-module id="znipe-data">
+  <template>
+
+    <firebase-query
+      id="query"
+      path="{{location}}"
+      data="{{players}}"
+      order-by-child="score"
+      limit-to-last=10
+    >
+    </firebase-query>
+
+  </template>
+
+  <script>
+
+  Polymer({
+
+    is: 'znipe-data',
+
+    properties: {
+      players: {
+        type: Array,
+        notify:true
+      },
+      location: {
+        type: String,
+      },
+    },
+  });
+
+  </script>
+
+</dom-module>

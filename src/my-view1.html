@@ -1,0 +1,94 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animation.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="znipe-data.html">
+<link rel="import" href="znipe-scoreboard.html">
+<link rel="import" href="znipe-personal-score.html">
+
+<dom-module id="my-view1">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        visibility: hidden;
+        padding: 10px;
+      }
+
+      paper-fab {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 100;
+      }
+
+      znipe-personal-score {
+        display:flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+    </style>
+
+    <znipe-data location="/pinball" players="{{players}}"></znipe-data>
+
+    <template is="dom-if" if="{{user}}">
+      <znipe-personal-score user="{{user}}" hidden$={{personalScoreVisible}}></znipe-personal-score>
+      <paper-fab icon="account-circle" on-tap="showPersonalScore"></paper-fab>
+    </template>
+
+    <znipe-scoreboard players="{{players}}"></znipe-scoreboard>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'my-view1',
+
+      behaviors: [
+        Polymer.NeonAnimatableBehavior,
+        Polymer.NeonAnimationRunnerBehavior
+      ],
+
+      attached: function() {
+        this.show();
+      },
+
+      properties: {
+        user: Object,
+
+        personalScoreVisible: {
+          type: Boolean,
+          value: true
+        },
+
+        animationConfig: {
+          type: Object,
+          value: function() {
+            return {
+              'entry': [{
+                animatable: this.$.grid,
+                type: 'entry'
+              }]
+            };
+          }
+        }
+      },
+
+      showPersonalScore: function() {
+        this.personalScoreVisible = !this.personalScoreVisible;
+      },
+
+      show: function() {
+        var that = this;
+        setTimeout(function() {
+          that.style.visibility = 'visible';
+          that.playAnimation('entry');
+        }, 1000);
+        
+      }
+      
+    });
+  </script>
+</dom-module>
